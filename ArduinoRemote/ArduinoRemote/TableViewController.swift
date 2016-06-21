@@ -28,6 +28,10 @@ class TableViewController: UITableViewController, RemoteServiceBrowserDelegate {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        browser.delegate = self
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -43,43 +47,35 @@ class TableViewController: UITableViewController, RemoteServiceBrowserDelegate {
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 2;
-        //return browser.getServiceList().count
+        //return 2;
+        return browser.getServiceList().count
     }
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("kCell", forIndexPath: indexPath)
-        //let service = browser.getServiceList().objectAtIndex(indexPath.row) as! NSNetService
-        cell.textLabel?.text = "Hello"
+        let service = browser.getServiceList().objectAtIndex(indexPath.row) as! NSNetService
+        cell.textLabel?.text = service.name
+        cell.detailTextLabel?.text = String(service.port)
         // Configure the cell...
 
         return cell
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-//        let service = browser.getServiceList().objectAtIndex(indexPath.row) as! NSNetService
-//        
-//        if (browser.isConnectedToService(service)){
-//            let bytes: [UInt8] = [0x4A, 0x4B, 0x4C, 0x4D, 0x4F]
-//            let data = NSData(bytes: bytes, length: bytes.count)
-//            
-//            //let temp = "TEST MESSAGE"
-//            //let bytes = temp.dataUsingEncoding(NSUTF8StringEncoding)
-//            browser.writeData(data);
-//        }else{
-//            browser.connectToService(service)
-//        }
-//        tableView.cellForRowAtIndexPath(indexPath)?.selected = false
-        performSegueWithIdentifier("RemoteViewController", sender: self)
+        
+        performSegueWithIdentifier("selectArduino", sender: self)
+        
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "RemoteViewController"{
+        if segue.identifier == "selectArduino"{
             if let indexPath = tableView.indexPathForSelectedRow{
+                browser.connectToService(browser.serviceList.objectAtIndex(indexPath.row) as! NSNetService)
                 let destsView = segue.destinationViewController as! RemoteViewController
-                destsView.text = "TeStInG ReMoTe"
+                destsView.text = "Testing Arduino"
+                destsView.browser = browser
             }
         }
     }

@@ -12,6 +12,9 @@
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; 
 
+char recievedBytes[160*2];
+int currByte = 0; 
+
 EthernetServer server(2300);
 
 void setup() {
@@ -20,7 +23,7 @@ void setup() {
   Serial.begin(9600);
   server.begin();
 
-  Serial.print("Starting...");
+  Serial.println("Starting...");
 
   EthernetBonjour.begin("ArduinoRemote");
   EthernetBonjour.addServiceRecord("_arduinoremote._tcp", 2300, MDNSServiceTCP);
@@ -32,17 +35,17 @@ void loop() {
 
   EthernetBonjour.run();
 
+
   EthernetClient client = server.available();
-  if (client.available()){
-
-    char c = client.read();
-    Serial.print(c);
+  if (client){
+    while (client.connected()){
+      if (client.available()){
+    
+        byte c = client.read();
+        Serial.print(c, HEX);
+      }
+    }
+    delay(1);
+    client.stop();
   }
-
-  if (!client.connected()){
-    Serial.println("Disconnected....");
-  }
-
-  delay(1);
-
 }

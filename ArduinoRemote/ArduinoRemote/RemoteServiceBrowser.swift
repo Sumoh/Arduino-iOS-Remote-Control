@@ -11,6 +11,8 @@ import CocoaAsyncSocket
 
 @objc protocol RemoteServiceBrowserDelegate{
     optional func servicesDidChange();
+    optional func didDisconnect();
+    optional func didConnect();
 }
 
 class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserDelegate, GCDAsyncSocketDelegate {
@@ -21,6 +23,7 @@ class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
     var serviceBrowser: NSNetServiceBrowser!
     var service: NSNetService!
     var delegate: RemoteServiceBrowserDelegate?
+    var packetsSent = 0
     
     func isConnectedToService(rService: NSNetService) -> Bool{
         if let temp = service{
@@ -52,6 +55,9 @@ class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
     }
     
     func netServiceBrowser(browser: NSNetServiceBrowser, didRemoveService service: NSNetService, moreComing: Bool) {
+        if service == self.service{
+            socket.disconnect()
+        }
         serviceList.removeObject(service)
         print("Lost service \(service.name)")
         delegate?.servicesDidChange!()
@@ -78,18 +84,38 @@ class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
             print("Not Connected")
         }
     }
+    
     func writeData(data: NSData){
         if (!socket.isConnected){
             connectToService(service)
             return 
         }
-        socket.writeData(data, withTimeout: 30.0, tag: 1)
+        socket.writeData(data, withTimeout: 30.0, tag: packetsSent)
+        packetsSent++
+    }
+    
+    func writePacket(packet: RemotePacket){
+        if (!socket.isConnected){
+            connectToService(service)
+            return
+        }
+        
+        print("Writing Packet\n")
+        print(packet.encodePacket())
+        socket.writeData(packet.encodePacket(), withTimeout: 10.0, tag: packetsSent)
+        packetsSent++
     }
 
     
     func socket(sock: GCDAsyncSocket!, didConnectToHost host: String!, port: UInt16) {
-        print("CONNECTED");
-
+        print("CONNECTED")
+        print(host)
+        print(sock.connectedPort)
+        delegate?.didConnect!()
+    }
+    
+    func socketDidDisconnect(sock: GCDAsyncSocket!, withError err: NSError!) {
+        delegate?.didDisconnect!()
     }
     
     private func connectWithService(sender: NSNetService) -> Bool{
