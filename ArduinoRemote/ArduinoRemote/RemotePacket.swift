@@ -9,10 +9,11 @@
 import Foundation
 
 enum PacketType: UInt8{
-    case integer = 1
-    case string = 2
-    case byteArr = 3
-    case actionPacket = 4
+    case unknown = 0x00
+    case integer = 0x01
+    case string = 0x0B
+    case byteArr = 0x15
+    case actionPacket = 0x1F
 }
 
 class RemotePacket: NSObject, EncodablePacket{
@@ -101,7 +102,10 @@ class RemotePacket: NSObject, EncodablePacket{
     
     func endPacketData() -> NSData{
         var endInt: UInt16 = UInt16(0xffff)
-        return NSData(bytes: &endInt, length: sizeof(UInt16))
+        let temp = NSMutableData()
+        temp.appendBytes(&endInt, length: sizeof(UInt16))
+        temp.appendBytes(&endInt, length: sizeof(UInt16))
+        return NSData(data: temp)
     }
     
     static func swapUInt16Data(data : NSData) -> NSData {

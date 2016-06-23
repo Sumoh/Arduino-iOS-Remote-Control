@@ -48,6 +48,9 @@ class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
     }
     
     func restart(){
+        if let temp = socket{
+            socket.disconnect()
+        }
         serviceList.removeAllObjects()
         delegate?.servicesDidChange!()
         serviceBrowser.stop()
@@ -55,8 +58,10 @@ class RemoteServiceBrowser: NSObject, NSNetServiceDelegate, NSNetServiceBrowserD
     }
     
     func netServiceBrowser(browser: NSNetServiceBrowser, didRemoveService service: NSNetService, moreComing: Bool) {
-        if service == self.service{
-            socket.disconnect()
+        if let serve = self.service{
+            if serve == service{
+                socket.disconnect()
+            }
         }
         serviceList.removeObject(service)
         print("Lost service \(service.name)")

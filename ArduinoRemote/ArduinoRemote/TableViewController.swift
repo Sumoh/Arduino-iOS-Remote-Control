@@ -29,6 +29,8 @@ class TableViewController: UITableViewController, RemoteServiceBrowserDelegate {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
     }
     
+    
+    
     override func viewWillAppear(animated: Bool) {
         browser.delegate = self
     }

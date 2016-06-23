@@ -20,13 +20,18 @@ class RemoteActionPacket : RemotePacket{
         
         data.appendData(packetTypeToData(type))
         
-        let desc = action.description
-        data.appendData(encodeString(desc))
+        let desc = encodeString(action.description)
         
-        let byteArr = action.rawCode
-        data.appendData(encodeInt16Array(byteArr))
+        let byteArr = encodeInt16Array(action.rawCode)
         
-        data.appendData(endPacketData())
+        let endData = endPacketData()
+        
+        var length: UInt16 = UInt16(desc.length + byteArr.length + endData.length)
+        data.appendBytes(&length, length: sizeof(UInt16))
+        
+        data.appendData(desc)
+        data.appendData(byteArr)
+        data.appendData(endData)
         
         return data
     }
