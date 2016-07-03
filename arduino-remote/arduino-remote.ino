@@ -39,7 +39,7 @@ class Packet{
 
   int decodeInteger();
   char* decodeString();
-  byte* decodeByteArr();
+  byte* decodeByteArray();
 
   void decodeActionPacket();
 
@@ -138,6 +138,17 @@ Packet Packet::decodePacket(){
   }
 
   return false;
+}
+
+byte* Packet::decodeByteArray(){
+  //first 2 bytes are length
+  int length = 0;
+  memcpy(&length, currByte, 2);
+  currByte += 2;
+
+  byte *byteArr = (byte*)malloc(length);
+  memcpy(byteArr, currByte, length);
+  return byteArr;
 }
 
 char* Packet::decodeString(){
