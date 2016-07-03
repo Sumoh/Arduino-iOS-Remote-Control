@@ -1,0 +1,6 @@
+framework module Pods_ArduinoRemote {
+  umbrella header "Pods-ArduinoRemote-umbrella.h"
+
+  export *
+  module * { export * }
+}
